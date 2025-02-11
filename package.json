@@ -1,0 +1,20 @@
+{
+  "name": "amentum-web-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@auth/core": "^0.37.4",
+    "next": "15.1.6",
+    "next-auth": "^4.24.11",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-table": "^7.8.0",
+    "regenerator-runtime": "^0.14.1"
+  }
+}
