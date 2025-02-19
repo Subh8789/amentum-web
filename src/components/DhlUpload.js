@@ -1,60 +1,115 @@
-"use client"
+// DHLUploadModal.js
+"use client";
 
-import { useState } from "react";
-import "./DhlUpload.css"
+import React, { useState } from 'react';
+import { X, Upload, Plus, Trash2 } from 'lucide-react';
+import styles from './DHLUploadModal.module.css';
 
-export default function DHLUpload() {
-  const [documents, setDocuments] = useState([{ id: 1, selectedDocument: "", uploadedFile: null }]);
+const DocumentField = ({ onDelete, index, isFirst }) => (
+  <div className={styles.documentFieldSet}>
+    <div className={styles.formGrid}>
+      {/* Select Document */}
+      <div className={styles.formGroup}>
+        <label className={styles.label}>SELECT DOCUMENT</label>
+        <div className={styles.selectWrapper}>
+          <select className={styles.select}>
+            <option>Select</option>
+          </select>
+          <span className={styles.selectArrow}></span>
+        </div>
+      </div>
 
-  const handleFileUpload = (event, index) => {
-    const newDocuments = [...documents];
-    newDocuments[index].uploadedFile = event.target.files[0];
-    setDocuments(newDocuments);
+      {/* Upload Document */}
+      <div className={styles.formGroup}>
+        <div className={styles.labelWrapper}>
+          <label className={styles.label}>UPLOAD DOCUMENT</label>
+          {!isFirst && (
+            <button 
+              onClick={() => onDelete(index)} 
+              className={styles.deleteButton}
+              title="Delete field"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
+        <div className={styles.uploadArea}>
+          <Upload size={16} className={styles.uploadIcon} />
+          <span className={styles.uploadText}>Click to upload</span>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const DHLUploadModal = ({ onClose }) => {
+  const [documentFields, setDocumentFields] = useState([0]);
+
+  const addDocumentField = () => {
+    setDocumentFields([...documentFields, documentFields.length]);
   };
 
-  const handleSelectChange = (event, index) => {
-    const newDocuments = [...documents];
-    newDocuments[index].selectedDocument = event.target.value;
-    setDocuments(newDocuments);
+  const removeDocumentField = (indexToRemove) => {
+    setDocumentFields(documentFields.filter((_, index) => index !== indexToRemove));
   };
 
-  const addDocument = () => {
-    setDocuments([...documents, { id: documents.length + 1, selectedDocument: "", uploadedFile: null }]);
+  const handleSave = () => {
+    // Add save logic here
+    onClose();
   };
 
   return (
-    <div className="modal-container">
-      <div className="modal">
-        <div className="modal-header">
-          <h2>DHL Upload</h2>
-          <span className="close">&times;</span>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContainer}>
+        {/* Header */}
+        <div className={styles.modalHeader}>
+          <div>
+            <h2 className={styles.headerTitle}>DHL Upload</h2>
+            <p className={styles.headerSubtitle}>Upload DHL Report</p>
+          </div>
+          <button 
+            className={styles.closeButton} 
+            onClick={onClose}
+            title="Close"
+          >
+            <X size={20} />
+          </button>
         </div>
-        <div className="modal-body">
-          {documents.map((doc, index) => (
-            <div key={doc.id} className="document-section">
-              <label htmlFor={`document-${doc.id}`}>Select Document</label>
-              <select
-                id={`document-${doc.id}`}
-                value={doc.selectedDocument}
-                onChange={(e) => handleSelectChange(e, index)}
-              >
-                <option value="">Select</option>
-                <option value="letter">Letter from Embassy</option>
-                <option value="bank">Bank Statement</option>
-                <option value="birth">Birth Certificate</option>
-              </select>
 
-              <label>Upload Document</label>
-              <div className="upload-box" onClick={() => document.getElementById(`fileInput-${doc.id}`).click()}>
-                <input id={`fileInput-${doc.id}`} type="file" onChange={(e) => handleFileUpload(e, index)} hidden />
-                <span>{doc.uploadedFile ? doc.uploadedFile.name : "Click to upload"}</span>
-              </div>
-            </div>
+        {/* Content */}
+        <div className={styles.modalContent}>
+          {documentFields.map((_, index) => (
+            <DocumentField
+              key={index}
+              index={index}
+              isFirst={index === 0}
+              onDelete={removeDocumentField}
+            />
           ))}
-          <button className="add-document" onClick={addDocument}>+ Add Document</button>
-          <button className="save-button">SAVE</button>
+
+          {/* Add Document Button */}
+          <button 
+            className={styles.addDocumentBtn}
+            onClick={addDocumentField}
+          >
+            <Plus size={16} />
+            <span>Add Document</span>
+          </button>
+        </div>
+
+        {/* Footer with buttons */}
+        <div className={styles.modalFooter}>
+         
+          <button 
+            className={styles.saveButton}
+            onClick={handleSave}
+          >
+            SAVE
+          </button>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default DHLUploadModal;

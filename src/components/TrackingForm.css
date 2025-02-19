@@ -85,7 +85,7 @@ h3 {
 }
 
 .form-group input,
-select {
+select ,textarea{
     padding: 8px;
     background: #E9F5F8 0% 0% no-repeat padding-box;
     border: 1px solid #C1E5EF;
@@ -93,7 +93,7 @@ select {
     color: #003C71;
 }
 
-.form-group input,
+.form-group input,textarea,
 select:focus-visible {
     outline-color: #C1E5EF;
 

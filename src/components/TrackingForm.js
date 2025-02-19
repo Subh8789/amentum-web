@@ -65,18 +65,16 @@ export default function TrackingForm({ trackingCode }) {
   const [formData, setFormData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [collectionDate, setCollectionDate] = useState("");
-  const [comment, setComment] = useState("");
   const [checkedDocuments, setCheckedDocuments] = useState([]);
   const [visaType, setVisaType] = useState(Object.keys(visaDocuments)[0]);
-
-
+  const [dropoffType, setDropoffType] = useState("interviewer");
+  const [additionalComment, setAdditionalComment] = useState("");
   const router = useRouter();
 
   const BASE_URL = "https://app.swglobalstaging.com";
 
   const POST_KEY = "f11e8d98b515c1d53290f3811bd01e5a2416a9315a8974d69cd939a1fce6b253"
-  const API_URL = `${BASE_URL}/api/waybill/verify`;
+  const API_URL = `${BASE_URL}/api/v1/waybill/track/appointments/search`;
   const CREATE_API_URL = `${BASE_URL}/api/v1/waybill/track/appointments/create`;
 
 
@@ -100,7 +98,7 @@ export default function TrackingForm({ trackingCode }) {
       };
 
       try {
-        const response = await fetch(`${API_URL}?trackingCode=${trackingCode}`, requestOptions);
+        const response = await fetch(`${API_URL}?search=${trackingCode}`, requestOptions);
         const data = await response.json();
         if (data.responseCode === 200 && data.success) {
           setFormData(data.data);
@@ -127,6 +125,8 @@ export default function TrackingForm({ trackingCode }) {
     );
   };
 
+  console.log("checkedDocuments",checkedDocuments)
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -147,7 +147,7 @@ export default function TrackingForm({ trackingCode }) {
 
     const rawData = {
       "application": formData.id,
-      "status": "Drop Off At OIS",
+      "status": "Dropped-Off Sent To Embassy (1 & 3)",
       "checkList": checkedDocuments,  // array of checked document list
       "user": "OIS TEST User",
       "visaType": visaType,            // dropdown value as string format 
@@ -180,7 +180,7 @@ export default function TrackingForm({ trackingCode }) {
 
   const handleClose = () => {
     setError(null);
-    if (error == "No data found...")
+    if (error)
       router.push("/dropoff");
   }
 
@@ -203,18 +203,6 @@ export default function TrackingForm({ trackingCode }) {
             <div className="left-container">
               <div className="top-container">
                 <form className="form-grid">
-                  {/* {Object.entries(formData).map(([key, value]) => (
-                    <div className="form-group" key={key}>
-                      <label htmlFor={key}>{key.replace(/([A-Z])/g, ' $1').toUpperCase()}</label>
-                      <input 
-                        type="text" 
-                        id={key} 
-                        name={key} 
-                        value={value}  
-                        readOnly
-                      />
-                    </div>
-                  ))} */}
 
                   <div className="form-group">
                     <label htmlFor="trackingId">TRACKING ID</label>
@@ -229,19 +217,7 @@ export default function TrackingForm({ trackingCode }) {
                     <input type="text" id="passport" name="passport" value={formData.passportNumber} readOnly />
                   </div>
 
-                  {/* <div className="form-group">
-                    <label htmlFor="center">Service</label>
-                    <input type="text" id="service" name="center" value={formData.service} readOnly />
-                  </div> */}
-
-                  {/* <div className="form-group">
-                    <label htmlFor="visaType">Visa Type</label>
-                    <select id="visaType" name="visaType" value={visaType} onChange={(e) => setVisaType(e.target.value)}>
-                      <option value="B1/B2 Work visa">B1/B2 Work visa</option>
-                      <option value="F1 Student visa">F1 Student visa</option>
-                      <option value="H1B Work visa">H1B Work visa</option>
-                    </select>
-                  </div> */}
+               
                   <div className="form-group">
                     <label htmlFor="visaType">Visa Type: </label>
                     <select id="visaType" name="visaType" value={visaType} onChange={(e) => setVisaType(e.target.value)}>
@@ -252,20 +228,21 @@ export default function TrackingForm({ trackingCode }) {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label htmlFor="visaType">Documents/Drop-off Type: </label>
-                    
-                  </div>
+              <label>Documents/Drop-off Type:</label>
+              <label>
+                <input type="radio" name="dropoffType" value="interviewer" checked={dropoffType === "interviewer"} onChange={() => setDropoffType("interviewer")} /> Interviewer Waiver
+              </label>
+              <label>
+              <input type="radio" name="dropoffType" value="additional" checked={dropoffType === "additional"} onChange={() => setDropoffType("additional")} /> Additional Documnets
+              </label>
+            </div>
 
-
-
-                  {/* <div className="form-group">
-                    <label htmlFor="collectionDate">Collection Date</label>
-                    <input type="date" id="collectionDate" name="collectionDate" value={collectionDate} onChange={(e) => setCollectionDate(e.target.value)} />
-                  </div> */}
-                  <div className="form-group">
-                    <label htmlFor="comment">Notes</label>
-                    <input type="text" id="comment" name="comment" value={comment} onChange={(e) => setComment(e.target.value)} />
-                  </div>
+            {dropoffType === "additional" && (
+              <div className="form-group">
+                <label htmlFor="additionalComment">Additional Comments:</label>
+                <textarea id="additionalComment" value={additionalComment} onChange={(e) => setAdditionalComment(e.target.value)}></textarea>
+              </div>
+            )}
 
                 </form>
               </div>
@@ -274,17 +251,9 @@ export default function TrackingForm({ trackingCode }) {
                   <button onClick={handleSubmit} className="submit-btn" type="submit">Submit</button>
                 </div>
 
-                {/* <div className="document-checklist">
-                  <hr></hr>
-                  <h4>Document Checklist</h4>
-                  {["Interview waiver confirmation", "International passport", "Expired visa passport", "DS-160 confirmation page", "Passport Photo", "Parent Visa Page", "Copy of I-20 form"].map((doc, index) => (
-                    <label key={index}>
-                      <input type="checkbox" value={doc} onChange={handleCheckboxChange} /> {doc}
-                    </label>
-                  ))}
-                </div> */}
+          
 
-                <div className="document-checklist">
+                {/* <div className="document-checklist">
                   <hr></hr>
                   <h4>Document Checklist</h4>
                   {visaType && visaDocuments[visaType]?.map((doc, index) => (
@@ -292,7 +261,17 @@ export default function TrackingForm({ trackingCode }) {
                       <input type="checkbox" value={doc} onChange={handleCheckboxChange} /> {doc}
                     </label>
                   ))}
-                </div>
+                </div> */}
+                 {dropoffType === "interviewer" && (
+              <div className="document-checklist">
+                <h4>Document Checklist</h4>
+                {visaDocuments[visaType]?.map((doc, index) => (
+                  <label key={index}>
+                    <input type="checkbox" value={doc} onChange={handleCheckboxChange} /> {doc}
+                  </label>
+                ))}
+              </div>
+            )}
               </div>
             </div>
             <div className="right-container">
